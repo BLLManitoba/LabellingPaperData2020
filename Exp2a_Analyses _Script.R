@@ -1,4 +1,4 @@
-# Use this script for the Farci Dataset
+# Use this script for the Exp 2a Tseltal Dataset
 library(dplyr)
 library(tidyr)
 library(ggpubr)
@@ -67,6 +67,11 @@ acc.means.TisC<-all.data %>%
   summarise_at(vars(accuracy), list(name = mean))
 acc.means.TisC
 
+con.means<-all.data %>%
+  group_by(nat_inf_label_TisC) %>%
+  summarise_at(vars(confidence), list(name = mean))
+con.means
+
 # Breaks out C and T
 acc.means<-all.data %>%
   group_by(nat_inf_label) %>%
@@ -80,14 +85,16 @@ con.means
 
 ###accuracy model T is C
 accuracy.TisC.model<-glmer(accuracy~1+nat_inf_label_TisC+
+                             confidence +
                         (1|participant)+(1|recording),
                       data = all.data,
                       family = binomial (link = 'logit'))
 
 summary(accuracy.TisC.model)
 
-###accuracy model
+###accuracy model T & C separated
 accuracy.model<-glmer(accuracy~1+nat_inf_label+
+                        confidence +
                         (1|participant)+(1|recording),
                       data = all.data,
                       family = binomial (link = 'logit'))
