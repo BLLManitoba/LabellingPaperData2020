@@ -29,13 +29,21 @@ all.data$rater_label<-factor(all.data$rater_label)
 all.data$accuracy[all.data$rater_label=="ads" &
                     all.data$nat_inf_label=="A"] <- 1
 all.data$accuracy[all.data$rater_label=="cds" &
-                    all.data$nat_inf_label=="T" |
+                    all.data$nat_inf_label=="T"] <- 1
+all.data$accuracy[all.data$rater_label=="cds" &
                     all.data$nat_inf_label=="C"] <- 1
 all.data$accuracy[all.data$rater_label=="cds" &
                     all.data$nat_inf_label=="A"] <- 0
 all.data$accuracy[all.data$rater_label=="ads" &
-                    all.data$nat_inf_label=="T"|
+                    all.data$nat_inf_label=="T"] <- 0
+all.data$accuracy[all.data$rater_label=="ads" &
                     all.data$nat_inf_label=="C"] <- 0
+
+# collapse C and T in Native Informer label
+all.data$nat_inf_label_TisC[all.data$nat_inf_label=="A"] <- "A"
+all.data$nat_inf_label_TisC[all.data$nat_inf_label=="C"] <- "C"
+all.data$nat_inf_label_TisC[all.data$nat_inf_label=="T"] <- "C"
+all.data$nat_inf_label_TisC <- factor(all.data$nat_inf_label_TisC)
 
 # build affect variables
 # bar plots to look at distributions
@@ -120,16 +128,13 @@ all.data$exaggeratedF<-factor(all.data$exaggeratedF)
 all.data$exaggeratedF<-relevel(all.data$exaggeratedF, "Neut")
 
 # confidence variable 
-all.data %>% 
-  rename(confidence = confidence.x)
-
-con.count<-ggplot(all.data, aes(confidence)) +
+con.count<-ggplot(all.data, aes(confidence.x)) +
   geom_bar(fill = "#0073C2FF") +
   theme_pubclean()
 con.count
 
 con.count.num <- all.data %>%
-  group_by(confidence) %>%
+  group_by(confidence.x) %>%
   summarise(counts = n())
 con.count.num
 
@@ -137,6 +142,18 @@ con.count.num
 # Accuracy means by group
 mean(all.data$accuracy)
 
+# C and T are collapsed 
+acc.means.TisC<-all.data %>%
+  group_by(nat_inf_label_TisC) %>%
+  summarise_at(vars(accuracy), list(name = mean))
+acc.means.TisC
+
+con.means<-all.data %>%
+  group_by(nat_inf_label_TisC) %>%
+  summarise_at(vars(confidence.x), list(name = mean))
+con.means
+
+# Breaks out C and T
 acc.means<-all.data %>%
   group_by(nat_inf_label) %>%
   summarise_at(vars(accuracy), list(name = mean))
@@ -144,11 +161,17 @@ acc.means
 
 con.means<-all.data %>%
   group_by(nat_inf_label) %>%
-  summarise_at(vars(confidence), list(name = mean))
+  summarise_at(vars(confidence.x), list(name = mean))
 con.means
 
-#df_summary <- reduce(list(acc.means, con.means), 
-#left_join, by = "nat_inf_label")
+###accuracy model T is C
+accuracy.TisC.model<-glmer(accuracy~1+nat_inf_label_TisC+
+                             confidence +
+                             (1|participant)+(1|recording),
+                           data = all.data,
+                           family = binomial (link = 'logit'))
+
+summary(accuracy.TisC.model)
 
 ###accuracy model
 accuracy.model<-glmer(accuracy~1+nat_inf_labelF+
