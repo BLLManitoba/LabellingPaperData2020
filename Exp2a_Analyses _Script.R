@@ -9,7 +9,14 @@ theme_set(theme_pubr())
 
 # call in the data
 all.data.raw=read.csv(file = 'clean_data/Exp2a_Tseltal_clean.csv',header=T)
-all.data<-subset(all.data.raw, rater_label != 'junk')
+all.data.all<-subset(all.data.raw, rater_label != 'junk')
+
+#remove all non-Female adult speakers
+all.data.all$speaker <- 0
+fa.samples <- which(grepl('^FA', all.data.all$block))
+all.data.all$speaker[fa.samples] <- 1
+
+all.data<-subset(all.data.all, speaker == 1)
 
 # sets variables as factors
 all.data$recording<-factor(all.data$recording)
