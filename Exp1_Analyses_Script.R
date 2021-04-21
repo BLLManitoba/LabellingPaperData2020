@@ -209,6 +209,9 @@ accuracy2.model<-glmer(accuracy~1+nat_inf_labelF+
 
 summary(accuracy2.model)
 
+tab_model(accuracy2.model, show.se = TRUE)
+
+
 #Happy Contrasts
 emmeans_results_happy <- emmeans(accuracy2.model, ~ nat_inf_labelF*happyF)
 emmeans_results_happy
@@ -274,7 +277,9 @@ addressee.model<-glmer(nat_inf_labeln ~ 1 +
 
 summary(addressee.model)
 
+tab_model(addressee.model, show.se = TRUE)
 
+##########STOP HERE!!!!
 ###accuracy model (Not used)
 accuracy.model<-glmer(accuracy~1+nat_inf_labelF+
                       confidence +

@@ -121,6 +121,7 @@ summary(accuracy.TisC.model.simple)
 #anova(accuracy.TisC.model,accuracy.TisC.model.simple)
 emmeans_results <- emmeans(accuracy.TisC.model.simple, ~ nat_inf_label_TisC)
 emmeans_results
+tab_model(accuracy.TisC.model.simple)
 
 ###accuracy model T & C separated
 accuracy.model<-glmer(accuracy~1+nat_inf_label+
