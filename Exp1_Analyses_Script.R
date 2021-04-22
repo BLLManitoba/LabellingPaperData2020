@@ -6,6 +6,7 @@ library(lme4)
 library(lmerTest)
 library(emmeans)
 library(sjPlot)
+library(gridExtra)
 theme_set(theme_pubr())
 
 # call in the data
@@ -14,8 +15,9 @@ all.data<-subset(all.data.raw, participant != 'SUB15')
 
 # sets variables as factors
 all.data$recorded_childF<-factor(all.data$recorded_child)
-all.data$participantF<-factor(all.data$participant)
-all.data$nat_inf_labelF<-factor(all.data$nat_inf_label)
+all.data$participantID<-factor(all.data$participant)
+all.data$Addressee<-factor(c(all.data$nat_inf_labeln), labels = c("cds","ads"))
+
 
 # Label accuracy
 all.data$accuracy[all.data$rater_labeln=="1" &
@@ -31,7 +33,194 @@ all.data$accuracy[all.data$rater_labeln=="0" &
 all.data$constant <- 1
 
 # build affect variables
-# bar plots to look at distributions
+# happy factor for model
+all.data$Happy[all.data$happy=="0"] <- 'Extremely Not'
+all.data$Happy[all.data$happy=="1"] <- 'Somewhat Not'
+all.data$Happy[all.data$happy=="2"] <- 'Neutral'
+all.data$Happy[all.data$happy=="3"] <- 'Somewhat'
+all.data$Happy[all.data$happy=="4"] <- 'Extremely'
+all.data$Happy<-factor(c(all.data$Happy), levels = c("Neutral", "Extremely Not", "Somewhat Not","Somewhat","Extremely"))
+#all.data$Happy<-relevel(all.data$Happy, "Neutral", "Extremely Not", "Somewhat Not", "Somewhat", "Extremely")
+
+# angry factor for model
+all.data$Angry[all.data$angry=="0"] <- 'Extremely Not'
+all.data$Angry[all.data$angry=="1"] <- 'Somewhat Not'
+all.data$Angry[all.data$angry=="2"] <- 'Neutral'
+all.data$Angry[all.data$angry=="3"] <- 'Somewhat'
+all.data$Angry[all.data$angry=="4"] <- 'Extremely'
+all.data$Angry<-factor(c(all.data$Angry), levels = c("Neutral", "Extremely Not", "Somewhat Not","Somewhat","Extremely"))
+#all.data$Angry<-relevel(all.data$Angry, "Neutral")
+
+# sad factor for model
+all.data$Sad[all.data$sad=="0"] <- 'Extremely Not'
+all.data$Sad[all.data$sad=="1"] <- 'Somewhat Not'
+all.data$Sad[all.data$sad=="2"] <- 'Neutral'
+all.data$Sad[all.data$sad=="3"] <- 'Somewhat'
+all.data$Sad[all.data$sad=="4"] <- 'Extremely'
+all.data$Sad<-factor(c(all.data$Sad), levels = c("Neutral", "Extremely Not", "Somewhat Not","Somewhat","Extremely"))
+#all.data$Sad<-relevel(all.data$Sad, "Neutral")
+
+sooth.count.num
+# sooth factor for model
+all.data$Sooth[all.data$sooth=="0"] <- 'Extremely Not'
+all.data$Sooth[all.data$sooth=="1"] <- 'Somewhat Not'
+all.data$Sooth[all.data$sooth=="2"] <- 'Neutral'
+all.data$Sooth[all.data$sooth=="3"] <- 'Somewhat'
+all.data$Sooth[all.data$sooth=="4"] <- 'Extremely'
+all.data$Sooth<-factor(c(all.data$Sooth), levels = c("Neutral", "Extremely Not", "Somewhat Not","Somewhat","Extremely"))
+#all.data$Sooth<-relevel(all.data$Sooth, "Neutral")
+
+# love factor for model
+all.data$Love[all.data$love=="0"] <- 'Extremely Not'
+all.data$Love[all.data$love=="1"] <- 'Somewhat Not'
+all.data$Love[all.data$love=="2"] <- 'Neutral'
+all.data$Love[all.data$love=="3"] <- 'Somewhat'
+all.data$Love[all.data$love=="4"] <- 'Extremely'
+all.data$Love<-factor(c(all.data$Love), levels = c("Neutral", "Extremely Not", "Somewhat Not","Somewhat","Extremely"))
+#all.data$Love<-relevel(all.data$Love, "Neutral")
+
+# exaggerated factor for model
+all.data$Exaggerated[all.data$exaggerated=="0"] <- 'Extremely Not'
+all.data$Exaggerated[all.data$exaggerated=="1"] <- 'Somewhat Not'
+all.data$Exaggerated[all.data$exaggerated=="2"] <- 'Neutral'
+all.data$Exaggerated[all.data$exaggerated=="3"] <- 'Somewhat'
+all.data$Exaggerated[all.data$exaggerated=="4"] <- 'Extremely'
+all.data$Exaggerated<-factor(c(all.data$Exaggerated), levels = c("Neutral", "Extremely Not", "Somewhat Not","Somewhat","Extremely"))
+#all.data$Exaggerated<-relevel(all.data$Exaggerated, "Neutral")
+
+# confidence variable 
+con.count<-ggplot(all.data, aes(confidence)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+con.count
+
+con.count.num <- all.data %>%
+  group_by(confidence) %>%
+  summarise(counts = n())
+con.count.num
+
+############demographics and analyses
+# Accuracy means by group
+mean(all.data$accuracy)
+median(all.data$accuracy)
+range(all.data$accuracy)
+sd(all.data$accuracy)
+
+acc.means<-all.data %>%
+  group_by(nat_inf_label) %>%
+  summarise_at(vars(accuracy), list(name = mean))
+acc.means
+
+con.means<-all.data %>%
+  group_by(nat_inf_label) %>%
+  summarise_at(vars(confidence), list(name = mean))
+con.means
+
+#df_summary <- reduce(list(acc.means, con.means), 
+                     #left_join, by = "nat_inf_label")
+
+#accuracy model compared to a constant of 1 to compare to chance
+#accuracy.chance.model<-glmer(accuracy~1+constant + (1|recorded_childF),
+                             #data = all.data,
+                             #family = binomial (link = 'logit')) 
+#summary(accuracy.chance.model)
+
+
+#accuracy model with positive affect interactions
+accuracy2.model<-glmer(accuracy~1+Addressee+
+                         confidence +
+                         Happy +
+                         Sad +
+                         Sooth +
+                         Love +
+                         Exaggerated +
+                         Addressee*Happy +
+                         Addressee*Sooth +
+                         Addressee*Love +
+                         Addressee*Exaggerated +
+                         #(1|participantF)+
+                         (1|recorded_childF),
+                       data = all.data,
+                       family = binomial (link = 'logit'))
+
+summary(accuracy2.model)
+
+tab_model(accuracy2.model, show.se = TRUE)
+
+
+#Happy Contrasts
+emmeans_results_happy <- emmeans(accuracy2.model, ~ Addressee*Happy)
+#emmeans_results_happy
+
+#pairs(emmeans_results)
+
+#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
+
+contrast(emmeans_results_happy, "revpairwise", by="Happy",adjust="bonferroni") 
+
+p1<-emmip(accuracy2.model, Addressee ~ Happy, CIs=TRUE, plotit=T)+theme_bw()
+
+#Love Contrasts
+emmeans_results_love <- emmeans(accuracy2.model, ~ Addressee*Love)
+#emmeans_results_love
+
+#pairs(emmeans_results)
+
+#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
+
+contrast(emmeans_results_love, "revpairwise", by="Love",adjust="bonferroni") 
+
+p2<-emmip(accuracy2.model, Addressee ~ Love, CIs=TRUE, plotit=T)+theme_bw()
+
+#Sooth Contrasts
+emmeans_results_sooth <- emmeans(accuracy2.model, ~ Addressee*Sooth)
+#emmeans_results_sooth
+
+#pairs(emmeans_results)
+
+#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
+
+
+contrast(emmeans_results_sooth, "revpairwise", by="Sooth",adjust="bonferroni") 
+
+p3<-emmip(accuracy2.model, Addressee ~ Sooth, CIs=TRUE, plotit=T)+theme_bw()
+
+#exaggerated contrasts
+emmeans_results_exag <- emmeans(accuracy2.model, ~ Addressee*Exaggerated)
+#emmeans_results_exag
+
+#pairs(emmeans_results)
+
+#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
+
+
+contrast(emmeans_results_exag, "revpairwise", by="Exaggerated",adjust="bonferroni") 
+
+p4<-emmip(accuracy2.model, Addressee ~ Exaggerated, CIs=TRUE, plotit=T)+theme_bw()
+
+#puts all the interaction plots together
+grid.arrange(p1,p2,p3,p4, nrow = 2)
+
+#exploratory model with addressee with positive affect predictors
+addressee.model<-glmer(nat_inf_labeln ~ 1 +
+                        #confidence +
+                        Happy +
+                        #Angry +
+                        #Sad +
+                        Sooth +
+                        Love +
+                        Exaggerated +
+                        (1|recorded_childF),
+                      data = all.data,
+                      family = binomial (link = 'logit'))
+
+summary(addressee.model)
+
+tab_model(addressee.model, show.se = TRUE)
+
+
+
+# bar plots to look at distributions of affect variables
 # sounded happy variable 
 happy.count<-ggplot(all.data, aes(happy)) +
   geom_bar(fill = "#0073C2FF") +
@@ -97,191 +286,10 @@ exaggerated.count.num <- all.data %>%
   summarise(counts = n())
 exaggerated.count.num
 
-# happy factor for model
-all.data$happyF[all.data$happy=="0"] <- 'ENot'
-all.data$happyF[all.data$happy=="1"] <- 'SNot'
-all.data$happyF[all.data$happy=="2"] <- 'Neut'
-all.data$happyF[all.data$happy=="3"] <- 'Some'
-all.data$happyF[all.data$happy=="4"] <- 'Extr'
-all.data$happyF<-factor(c(all.data$happyF), levels = c("Neut", "ENot", "SNot","Some","Extr"))
-#all.data$happyF<-relevel(all.data$happyF, "Neut", "ENot", "SNot", "Some", "Extr")
-
-# angry factor for model
-all.data$angryF[all.data$angry=="0"] <- 'ENot'
-all.data$angryF[all.data$angry=="1"] <- 'SNot'
-all.data$angryF[all.data$angry=="2"] <- 'Neut'
-all.data$angryF[all.data$angry=="3"] <- 'Some'
-all.data$angryF[all.data$angry=="4"] <- 'Extr'
-all.data$angryF<-factor(c(all.data$angryF), levels = c("Neut", "ENot", "SNot","Some","Extr"))
-#all.data$angryF<-relevel(all.data$angryF, "Neut")
-
-# sad factor for model
-all.data$sadF[all.data$sad=="0"] <- 'ENot'
-all.data$sadF[all.data$sad=="1"] <- 'SNot'
-all.data$sadF[all.data$sad=="2"] <- 'Neut'
-all.data$sadF[all.data$sad=="3"] <- 'Some'
-all.data$sadF[all.data$sad=="4"] <- 'Extr'
-all.data$sadF<-factor(c(all.data$sadF), levels = c("Neut", "ENot", "SNot","Some","Extr"))
-#all.data$sadF<-relevel(all.data$sadF, "Neut")
-
-sooth.count.num
-# sooth factor for model
-all.data$soothF[all.data$sooth=="0"] <- 'ENot'
-all.data$soothF[all.data$sooth=="1"] <- 'SNot'
-all.data$soothF[all.data$sooth=="2"] <- 'Neut'
-all.data$soothF[all.data$sooth=="3"] <- 'Some'
-all.data$soothF[all.data$sooth=="4"] <- 'Extr'
-all.data$soothF<-factor(c(all.data$soothF), levels = c("Neut", "ENot", "SNot","Some","Extr"))
-#all.data$soothF<-relevel(all.data$soothF, "Neut")
-
-# love factor for model
-all.data$loveF[all.data$love=="0"] <- 'ENot'
-all.data$loveF[all.data$love=="1"] <- 'SNot'
-all.data$loveF[all.data$love=="2"] <- 'Neut'
-all.data$loveF[all.data$love=="3"] <- 'Some'
-all.data$loveF[all.data$love=="4"] <- 'Extr'
-all.data$loveF<-factor(c(all.data$loveF), levels = c("Neut", "ENot", "SNot","Some","Extr"))
-#all.data$loveF<-relevel(all.data$loveF, "Neut")
-
-# exaggerated factor for model
-all.data$exaggeratedF[all.data$exaggerated=="0"] <- 'ENot'
-all.data$exaggeratedF[all.data$exaggerated=="1"] <- 'SNot'
-all.data$exaggeratedF[all.data$exaggerated=="2"] <- 'Neut'
-all.data$exaggeratedF[all.data$exaggerated=="3"] <- 'Some'
-all.data$exaggeratedF[all.data$exaggerated=="4"] <- 'Extr'
-all.data$exaggeratedF<-factor(c(all.data$exaggeratedF), levels = c("Neut", "ENot", "SNot","Some","Extr"))
-#all.data$exaggeratedF<-relevel(all.data$exaggeratedF, "Neut")
-
-# confidence variable 
-con.count<-ggplot(all.data, aes(confidence)) +
-  geom_bar(fill = "#0073C2FF") +
-  theme_pubclean()
-con.count
-
-con.count.num <- all.data %>%
-  group_by(confidence) %>%
-  summarise(counts = n())
-con.count.num
-
-############demographics and analyses
-# Accuracy means by group
-mean(all.data$accuracy)
-median(all.data$accuracy)
-range(all.data$accuracy)
-sd(all.data$accuracy)
-
-acc.means<-all.data %>%
-  group_by(nat_inf_label) %>%
-  summarise_at(vars(accuracy), list(name = mean))
-acc.means
-
-con.means<-all.data %>%
-  group_by(nat_inf_label) %>%
-  summarise_at(vars(confidence), list(name = mean))
-con.means
-
-#df_summary <- reduce(list(acc.means, con.means), 
-                     #left_join, by = "nat_inf_label")
-
-#accuracy model compared to a constant of 1 to compare to chance
-#accuracy.chance.model<-glmer(accuracy~1+constant + (1|recorded_childF),
-                             #data = all.data,
-                             #family = binomial (link = 'logit')) 
-#summary(accuracy.chance.model)
-
-
-#accuracy model with positive affect interactions
-accuracy2.model<-glmer(accuracy~1+nat_inf_labelF+
-                         confidence +
-                         happyF +
-                         sadF +
-                         soothF +
-                         loveF +
-                         exaggeratedF +
-                         nat_inf_labelF*happyF +
-                         nat_inf_labelF*soothF +
-                         nat_inf_labelF*loveF +
-                         nat_inf_labelF*exaggeratedF +
-                         #(1|participantF)+
-                         (1|recorded_childF),
-                       data = all.data,
-                       family = binomial (link = 'logit'))
-
-summary(accuracy2.model)
-
-tab_model(accuracy2.model, show.se = TRUE)
-
-
-#Happy Contrasts
-emmeans_results_happy <- emmeans(accuracy2.model, ~ nat_inf_labelF*happyF)
-emmeans_results_happy
-
-#pairs(emmeans_results)
-
-#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
-
-contrast(emmeans_results_happy, "revpairwise", by="happyF",adjust="bonferroni") 
-
-emmip(accuracy2.model, nat_inf_labelF ~ happyF, CIs=TRUE, plotit=T)+theme_bw()
-
-#Love Contrasts
-emmeans_results_love <- emmeans(accuracy2.model, ~ nat_inf_labelF*loveF)
-emmeans_results_love
-
-#pairs(emmeans_results)
-
-#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
-
-contrast(emmeans_results_love, "revpairwise", by="loveF",adjust="bonferroni") 
-
-emmip(accuracy2.model, nat_inf_labelF ~ loveF, CIs=TRUE, plotit=T)+theme_bw()
-
-#Sooth Contrasts
-emmeans_results_sooth <- emmeans(accuracy2.model, ~ nat_inf_labelF*soothF)
-emmeans_results_sooth
-
-#pairs(emmeans_results)
-
-#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
-
-
-contrast(emmeans_results_sooth, "revpairwise", by="soothF",adjust="bonferroni") 
-
-emmip(accuracy2.model, nat_inf_labelF ~ soothF, CIs=TRUE, plotit=T)+theme_bw()
-
-#exaggerated contrasts
-emmeans_results_exag <- emmeans(accuracy2.model, ~ nat_inf_labelF*exaggeratedF)
-emmeans_results_exag
-
-#pairs(emmeans_results)
-
-#contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
-
-
-contrast(emmeans_results_exag, "revpairwise", by="exaggeratedF",adjust="bonferroni") 
-
-emmip(accuracy2.model, nat_inf_labelF ~ exaggeratedF, CIs=TRUE, plotit=T)+theme_bw()
-
-#explatory model dv addressee with positive predictors
-addressee.model<-glmer(nat_inf_labeln ~ 1 +
-                        #confidence +
-                        happyF +
-                        #angryF +
-                        #sadF +
-                        soothF +
-                        loveF +
-                        exaggeratedF +
-                        (1|recorded_childF),
-                      data = all.data,
-                      family = binomial (link = 'logit'))
-
-summary(addressee.model)
-
-tab_model(addressee.model, show.se = TRUE)
 
 ##########STOP HERE!!!!
 ###accuracy model (Not used)
-accuracy.model<-glmer(accuracy~1+nat_inf_labelF+
+accuracy.model<-glmer(accuracy~1+Addressee+
                       confidence +
                       happyF +
                       #angryF +
@@ -296,7 +304,7 @@ accuracy.model<-glmer(accuracy~1+nat_inf_labelF+
 summary(accuracy.model)
 
 ###accuracy model cds
-all.data.cds<-subset(all.data, nat_inf_labelF == 'I')
+all.data.cds<-subset(all.data, Addressee == 'I')
 accuracy.model.cds<-glmer(accuracy~confidence +
                         happyF +
                         #angryF +
@@ -343,7 +351,7 @@ exaggerated.means.cds<-all.data.cds %>%
 exaggerated.means.cds
 
 ###accuracy model ads
-all.data.ads<-subset(all.data, nat_inf_labelF == 'A')
+all.data.ads<-subset(all.data, Addressee == 'A')
 accuracy.model.ads<-glmer(accuracy~1+
                         confidence +
                         happyF +
