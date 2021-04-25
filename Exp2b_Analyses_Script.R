@@ -227,6 +227,19 @@ summary(addressee.model)
 
 tab_model(addressee.model, show.se = TRUE)
 
+
+addressee.model.con<-glmer(Addressee.num ~ 1 +
+                         confidence.x +
+                         happy +
+                         sooth +
+                         love +
+                         exaggerate +
+                         (1|recording),
+                       data = all.data,
+                       family = binomial (link = 'logit'))
+
+summary(addressee.model.con)
+
 ###accuracy model T is not C
 #accuracy model with positive affect interactions
 accuracy3.model<-glmer(accuracy~1 + AddresseeT +
@@ -298,7 +311,15 @@ exaggerated.count.num <- all.data %>%
 exaggerated.count.num
 
 
+con.count<-ggplot(all.data, aes(exaggerate)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()
+exaggerated.count
 
+exaggerated.count.num <- all.data %>%
+  group_by(exaggerate) %>%
+  summarise(counts = n())
+exaggerated.count.num
 
 
 

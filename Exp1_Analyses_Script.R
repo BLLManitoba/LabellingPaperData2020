@@ -203,7 +203,7 @@ grid.arrange(p1,p2,p3,p4, nrow = 2)
 
 #exploratory model with addressee with positive affect predictors
 addressee.model<-glmer(nat_inf_labeln ~ 1 +
-                        #confidence +
+                        confidence +
                         Happy +
                         #Angry +
                         #Sad +
