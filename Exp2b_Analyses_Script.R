@@ -5,6 +5,7 @@ library(ggplot2)
 library(lme4)
 library(lmerTest)
 library(emmeans)
+library(tidyverse)
 library(sjPlot)
 library(gridExtra)
 theme_set(theme_pubr())
@@ -212,6 +213,7 @@ p4<-emmip(accuracy2.model, Addressee ~ Exaggerated, CIs=TRUE, plotit=T)+theme_bw
 #puts all the interaction plots together
 grid.arrange(p1,p2,p3,p4, nrow = 2)
 
+
 #exploratory model with addressee with positive affect predictors
 addressee.model<-glmer(Addressee.num ~ 1 +
                          #confidence.x +
@@ -227,7 +229,7 @@ summary(addressee.model)
 
 tab_model(addressee.model, show.se = TRUE)
 
-
+#same exploratory model but treats the affect as contagious
 addressee.model.con<-glmer(Addressee.num ~ 1 +
                          confidence.x +
                          happy +
