@@ -130,7 +130,7 @@ con.means
 accuracy2.model<-glmer(accuracy~1+Addressee+
                          confidence +
                          Happy +
-                         Sad +
+                         #Sad +
                          Sooth +
                          Love +
                          Exaggerated +
@@ -228,7 +228,7 @@ happy.count<-ggplot(all.data, aes(happy)) +
 happy.count
 
 happy.count.num <- all.data %>%
-  group_by(happy) %>%
+  group_by(Addressee, happy) %>%
   summarise(counts = n())
 happy.count.num
 
@@ -261,8 +261,9 @@ sooth.count<-ggplot(all.data, aes(sooth)) +
 sooth.count
 
 sooth.count.num <- all.data %>%
-  group_by(sooth) %>%
+  group_by(Addressee, sooth) %>%
   summarise(counts = n())
+sooth.count.num
 
 # sounded loving
 love.count<-ggplot(all.data, aes(love)) +
@@ -271,7 +272,7 @@ love.count<-ggplot(all.data, aes(love)) +
 love.count
 
 love.count.num <- all.data %>%
-  group_by(love) %>%
+  group_by(Addressee,love) %>%
   summarise(counts = n())
 love.count.num
 
@@ -282,7 +283,7 @@ exaggerated.count<-ggplot(all.data, aes(exaggerated)) +
 exaggerated.count
 
 exaggerated.count.num <- all.data %>%
-  group_by(exaggerated) %>%
+  group_by(Addressee,exaggerated) %>%
   summarise(counts = n())
 exaggerated.count.num
 
