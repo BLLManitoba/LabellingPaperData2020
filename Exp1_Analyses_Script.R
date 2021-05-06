@@ -17,7 +17,7 @@ all.data<-subset(all.data.raw, participant != 'SUB15')
 all.data$recorded_childF<-factor(all.data$recorded_child)
 all.data$participantID<-factor(all.data$participant)
 all.data$Addressee<-factor(c(all.data$nat_inf_labeln), labels = c("cds","ads"))
-
+all.data$Addressee<-relevel(all.data$Addressee, "ads")
 
 # Label accuracy
 all.data$accuracy[all.data$rater_labeln=="1" &
