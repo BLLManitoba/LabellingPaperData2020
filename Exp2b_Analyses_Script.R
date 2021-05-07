@@ -81,14 +81,14 @@ all.data$Love[all.data$love=="4"] <- 'Extremely'
 all.data$Love<-factor(c(all.data$Love), levels = c("Neutral", "Little","Some","More","Extremely"))
 #all.data$Love<-relevel(all.data$Love, "Some")
 
-# exaggerated factor for model
-all.data$Exaggerated[all.data$exaggerate=="0"] <- 'Neutral'
-all.data$Exaggerated[all.data$exaggerate=="1"] <- 'Little'
-all.data$Exaggerated[all.data$exaggerate=="2"] <- 'Some'
-all.data$Exaggerated[all.data$exaggerate=="3"] <- 'More'
-all.data$Exaggerated[all.data$exaggerate=="4"] <- 'Extremely'
-all.data$Exaggerated<-factor(c(all.data$Exaggerated), levels = c("Neutral", "Little","Some","More","Extremely"))
-#all.data$Exaggerated<-relevel(all.data$Exaggerated, "Some")
+# Excited factor for model
+all.data$Excited[all.data$exaggerate=="0"] <- 'Neutral'
+all.data$Excited[all.data$exaggerate=="1"] <- 'Little'
+all.data$Excited[all.data$exaggerate=="2"] <- 'Some'
+all.data$Excited[all.data$exaggerate=="3"] <- 'More'
+all.data$Excited[all.data$exaggerate=="4"] <- 'Extremely'
+all.data$Excited<-factor(c(all.data$Excited), levels = c("Neutral", "Little","Some","More","Extremely"))
+#all.data$Excited<-relevel(all.data$Excited, "Some")
 
 # confidence variable 
 con.count<-ggplot(all.data, aes(confidence.x)) +
@@ -120,7 +120,7 @@ acc.sd.TisC<-all.data %>%
 acc.sd.TisC
 
 acc.count.TisC<-all.data %>%
-  group_by(nat_inf_label_TisC) %>%
+  group_by(Addressee) %>%
   summarise(counts = n())
 acc.count.TisC
 
@@ -150,11 +150,11 @@ accuracy2.model<-glmer(accuracy~1 + Addressee +
                          Happy +
                          Sooth +
                          Love +
-                         Exaggerated +
+                         Excited +
                          Addressee*Happy +
                          Addressee*Sooth +
                          Addressee*Love +
-                         Addressee*Exaggerated +
+                         Addressee*Excited +
                          #(1|participantF)+
                          (1|recording),
                        data = all.data,
@@ -202,8 +202,8 @@ contrast(emmeans_results_sooth, "revpairwise", by="Sooth",adjust="bonferroni")
 
 p3<-emmip(accuracy2.model, Addressee ~ Sooth, CIs=TRUE, plotit=T)+theme_bw()
 
-#exaggerated contrasts
-emmeans_results_exag <- emmeans(accuracy2.model, ~ Addressee*Exaggerated)
+#Excited contrasts
+emmeans_results_exag <- emmeans(accuracy2.model, ~ Addressee*Excited)
 #emmeans_results_exag
 
 #pairs(emmeans_results)
@@ -211,9 +211,9 @@ emmeans_results_exag <- emmeans(accuracy2.model, ~ Addressee*Exaggerated)
 #contrast(emmeans_results, "revpairwise", by="nat_inf_labelF",adjust="bonferroni") 
 
 
-contrast(emmeans_results_exag, "revpairwise", by="Exaggerated",adjust="bonferroni") 
+contrast(emmeans_results_exag, "revpairwise", by="Excited",adjust="bonferroni") 
 
-p4<-emmip(accuracy2.model, Addressee ~ Exaggerated, CIs=TRUE, plotit=T)+theme_bw()
+p4<-emmip(accuracy2.model, Addressee ~ Excited, CIs=TRUE, plotit=T)+theme_bw()
 
 #puts all the interaction plots together
 grid.arrange(p1,p2,p3,p4, nrow = 2)
@@ -225,7 +225,7 @@ addressee.model<-glmer(Addressee.num ~ 1 +
                          Happy +
                          Sooth +
                          Love +
-                         Exaggerated +
+                         Excited +
                          (1|recording),
                        data = all.data,
                        family = binomial (link = 'logit'))
@@ -271,8 +271,6 @@ summary(accuracy4.model)
 
 tab_model(accuracy4.model, show.se = TRUE)
 
-
-
 # bar plots to look at distributions
 # sounded happy variable 
 happy.count<-ggplot(all.data, aes(happy)) +
@@ -285,6 +283,13 @@ happy.count.num <- all.data %>%
   summarise(counts = n())
 happy.count.num
 
+happy.CI<- all.data %>% 
+  group_by(Addressee) %>% 
+  summarise(ci = list(mean_cl_normal(happy) %>% 
+                        rename(mean=y, lwr=ymin, upr=ymax))) %>% 
+  unnest
+happy.CI
+
 # sounded soothing
 sooth.count<-ggplot(all.data, aes(sooth)) +
   geom_bar(fill = "#0073C2FF") +
@@ -294,6 +299,13 @@ sooth.count
 sooth.count.num <- all.data %>%
   group_by(sooth) %>%
   summarise(counts = n())
+
+sooth.CI<- all.data %>% 
+  group_by(Addressee) %>% 
+  summarise(ci = list(mean_cl_normal(sooth) %>% 
+                        rename(mean=y, lwr=ymin, upr=ymax))) %>% 
+  unnest
+sooth.CI
 
 # sounded loving
 love.count<-ggplot(all.data, aes(love)) +
@@ -306,27 +318,88 @@ love.count.num <- all.data %>%
   summarise(counts = n())
 love.count.num
 
-# sounded exaggerated
-exaggerated.count<-ggplot(all.data, aes(exaggerate)) +
+love.CI<- all.data %>% 
+  group_by(Addressee) %>% 
+  summarise(ci = list(mean_cl_normal(love) %>% 
+                        rename(mean=y, lwr=ymin, upr=ymax))) %>% 
+  unnest
+love.CI
+
+# sounded Excited
+Excited.count<-ggplot(all.data, aes(exaggerate)) +
   geom_bar(fill = "#0073C2FF") +
   theme_pubclean()
-exaggerated.count
+Excited.count
 
-exaggerated.count.num <- all.data %>%
+Excited.count.num <- all.data %>%
   group_by(exaggerate) %>%
   summarise(counts = n())
-exaggerated.count.num
+Excited.count.num
 
 
 con.count<-ggplot(all.data, aes(exaggerate)) +
   geom_bar(fill = "#0073C2FF") +
   theme_pubclean()
-exaggerated.count
+Excited.count
 
-exaggerated.count.num <- all.data %>%
+Excited.count.num <- all.data %>%
   group_by(exaggerate) %>%
   summarise(counts = n())
-exaggerated.count.num
+Excited.count.num
+
+Excited.CI<- all.data %>% 
+  group_by(Addressee) %>% 
+  summarise(ci = list(mean_cl_normal(exaggerate) %>% 
+                        rename(mean=y, lwr=ymin, upr=ymax))) %>% 
+  unnest
+Excited.CI
+
+###Accuracy bar plot
+AccPlot <- data.frame(Addressee = factor(c(1,2,3)),
+                      Affect = c( .82, .84, .79),
+                      CI=c( .03,.03, .03),
+                      Salience = factor(c(1,2,3)))
+
+Acc.Bar<-ggplot(AccPlot, aes(x=Salience, y=Affect))+ 
+  geom_bar(stat="identity", position="dodge")+
+  geom_bar(stat="identity", colour="black", position="dodge",show.legend=FALSE)+xlab("")+
+  ylab("Mean Accuracy \n")+
+  geom_hline(yintercept=.5, linetype='dotted', col = 'black')+
+  geom_errorbar(aes(ymin=Affect-CI, ymax=Affect+CI),width=.2,position=position_dodge(.9))+
+  theme_bw() + 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), axis.line.x = element_line(color="black", size = .5),
+        axis.line.y = element_line(color="black", size = .5))+
+  scale_x_discrete(breaks=c("1", "2", "3"), labels=c("Overall", "CDS","ADS")) 
+
+Acc.Bar+coord_cartesian(ylim=c(0, 1))+scale_fill_manual(values=c("#808080"),guide = guide_legend(title = ""),labels=c("cds", "ads"))+
+  scale_y_continuous(breaks=c(0,.1,.2,.3,.4, .5, .6, .7, .8, .9, 1.0), expand = c(0,0))
+
+
+##Affect bar plots
+AffectPlot <- data.frame(Addressee = factor(c(1,2,1,2,1,2,1,2)),
+                         Affect = c( 1.01, 1.06, 1.13, 1.12, .97, .93, 1.13, 1.12),
+                         CI=c( .05,.09, .05, .09, .05, .09, .05, .09),
+                         Salience = factor(c(1,1,2,2,3,3,4,4)))
+
+Affect.Bar<-ggplot(AffectPlot, aes(x=Salience, y=Affect, fill=Addressee))+ 
+  geom_bar(aes(fill=Addressee),stat="identity", position="dodge")+
+  geom_bar(aes(fill=Addressee),stat="identity", colour="black", position="dodge",show.legend=FALSE)+xlab("")+
+  ylab("Mean Emotional Rating \n")+
+  geom_errorbar(aes(ymin=Affect-CI, ymax=Affect+CI),width=.2,position=position_dodge(.9))+
+  theme_bw() + 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), axis.line.x = element_line(color="black", size = .5),
+        axis.line.y = element_line(color="black", size = .5))+
+  scale_x_discrete(breaks=c("1", "2", "3", "4"), labels=c("Happy", "Love","Sooth", "Excited")) 
+
+Affect.Bar+coord_cartesian(ylim=c(0, 2))+scale_fill_manual(values=c("#696969", "#808080"),guide = guide_legend(title = ""),labels=c("cds", "ads"))+
+  scale_y_continuous(breaks=c(0,.25,.5,.75, 1.0,1.25, 1.5,1.75, 2.0), expand = c(0,0))
+
+
+
+
+
 
 
 
