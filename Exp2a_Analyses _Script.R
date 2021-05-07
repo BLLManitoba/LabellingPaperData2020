@@ -85,6 +85,11 @@ acc.sd.TisC<-all.data %>%
   summarise_at(vars(accuracy), list(name = sd))
 acc.sd.TisC
 
+acc.count.TisC<-all.data %>%
+  group_by(nat_inf_label_TisC) %>%
+  summarise(counts = n())
+acc.count.TisC
+
 con.means<-all.data %>%
   group_by(nat_inf_label_TisC) %>%
   summarise_at(vars(confidence), list(name = mean))
@@ -132,4 +137,25 @@ accuracy.model<-glmer(accuracy~1+nat_inf_label+
                       family = binomial (link = 'logit'))
 
 summary(accuracy.model)
+
+###Accuracy bar plot
+AccPlot <- data.frame(Addressee = factor(c(1,2,3)),
+                      Affect = c( .82, .84, .79),
+                      CI=c( .03,.03, .03),
+                      Salience = factor(c(1,2,3)))
+
+Acc.Bar<-ggplot(AccPlot, aes(x=Salience, y=Affect))+ 
+  geom_bar(stat="identity", position="dodge")+
+  geom_bar(stat="identity", colour="black", position="dodge",show.legend=FALSE)+xlab("")+
+  ylab("Mean Accuracy \n")+
+  geom_hline(yintercept=.5, linetype='dotted', col = 'black')+
+  geom_errorbar(aes(ymin=Affect-CI, ymax=Affect+CI),width=.2,position=position_dodge(.9))+
+  theme_bw() + 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), axis.line.x = element_line(color="black", size = .5),
+        axis.line.y = element_line(color="black", size = .5))+
+  scale_x_discrete(breaks=c("1", "2", "3"), labels=c("Overall", "CDS","ADS")) 
+
+Acc.Bar+coord_cartesian(ylim=c(0, 1))+scale_fill_manual(values=c("#808080"),guide = guide_legend(title = ""),labels=c("cds", "ads"))+
+  scale_y_continuous(breaks=c(0,.1,.2,.3,.4, .5, .6, .7, .8, .9, 1.0), expand = c(0,0))
 

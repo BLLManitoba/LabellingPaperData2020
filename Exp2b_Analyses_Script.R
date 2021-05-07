@@ -119,6 +119,11 @@ acc.sd.TisC<-all.data %>%
   summarise_at(vars(accuracy), list(name = sd))
 acc.sd.TisC
 
+acc.count.TisC<-all.data %>%
+  group_by(nat_inf_label_TisC) %>%
+  summarise(counts = n())
+acc.count.TisC
+
 con.means<-all.data %>%
   group_by(Addressee) %>%
   summarise_at(vars(confidence.x), list(name = mean))
