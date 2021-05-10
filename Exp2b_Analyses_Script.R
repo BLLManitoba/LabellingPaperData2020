@@ -378,14 +378,14 @@ Acc.Bar+coord_cartesian(ylim=c(0, 1))+scale_fill_manual(values=c("#808080"),guid
 
 ##Affect bar plots
 AffectPlot <- data.frame(Addressee = factor(c(1,2,1,2,1,2,1,2)),
-                         Affect = c( 1.01, 1.06, 1.13, 1.12, .97, .93, 1.13, 1.12),
+                         Affect = c( 2.01, 2.06, 2.13, 2.12, 1.97, 1.93, 2.13, 2.12),
                          CI=c( .05,.09, .05, .09, .05, .09, .05, .09),
                          Salience = factor(c(1,1,2,2,3,3,4,4)))
 
 Affect.Bar<-ggplot(AffectPlot, aes(x=Salience, y=Affect, fill=Addressee))+ 
   geom_bar(aes(fill=Addressee),stat="identity", position="dodge")+
   geom_bar(aes(fill=Addressee),stat="identity", colour="black", position="dodge",show.legend=FALSE)+xlab("")+
-  ylab("Mean Emotional Rating \n")+
+  ylab("Average Emotional Rating \n")+
   geom_errorbar(aes(ymin=Affect-CI, ymax=Affect+CI),width=.2,position=position_dodge(.9))+
   theme_bw() + 
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),
@@ -393,8 +393,8 @@ Affect.Bar<-ggplot(AffectPlot, aes(x=Salience, y=Affect, fill=Addressee))+
         axis.line.y = element_line(color="black", size = .5))+
   scale_x_discrete(breaks=c("1", "2", "3", "4"), labels=c("Happy", "Love","Sooth", "Excited")) 
 
-Affect.Bar+coord_cartesian(ylim=c(0, 2))+scale_fill_manual(values=c("#696969", "#808080"),guide = guide_legend(title = ""),labels=c("cds", "ads"))+
-  scale_y_continuous(breaks=c(0,.25,.5,.75, 1.0,1.25, 1.5,1.75, 2.0), expand = c(0,0))
+Affect.Bar+coord_cartesian(ylim=c(0, 4))+scale_fill_manual(values=c("#696969", "#808080"),guide = guide_legend(title = ""),labels=c("cds", "ads"))+
+  scale_y_continuous(breaks=c(0,.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0), expand = c(0,0))
 
 
 
